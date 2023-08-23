@@ -12,10 +12,10 @@ npm install git-diff-analyser --global
 
 ## Usage
 
-Once installed, you can use the `analyse` command in any git repository to get feedback on the differences:
+Once installed, you can use the `analyse-diff-gpt` command in any git repository to get feedback on the differences:
 
 ```bash
-analyse
+analyse-diff-gpt
 ```
 
 This will run the script on the current git diff and provide feedback.
