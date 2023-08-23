@@ -85,7 +85,7 @@ exec(`git diff ${targetBranch}`, async (err, stdout, stderr) => {
 
     for (const fileDiff of fileDiffs) {
         const { file_a, file_b } = fileDiff;
-        if (['composer.lock', 'package-lock.json', '.feature', '.lock', '.log', '.cache'].some(ext => file_a.endsWith(ext) || file_b.endsWith(ext)) ||
+        if (['composer.lock', 'package-lock.json', '.feature', '.lock', '.log', '.cache', '.md', '.env'].some(ext => file_a.endsWith(ext) || file_b.endsWith(ext)) ||
             isIgnoredFile(file_a, gitIgnorePatterns) ||
             isIgnoredFile(file_b, gitIgnorePatterns)) {
             continue;
