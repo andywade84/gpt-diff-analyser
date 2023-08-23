@@ -23,10 +23,36 @@ function parseDiff(diffContent) {
         if (!fileNames) continue;
 
         const hunks = fileDiff.split(/@@.*?@@/).slice(1);
-        const parsedHunks = hunks.map(hunk => ({
-            added: hunk.trim().split('\n').filter(line => line.startsWith('+')).map(line => line.slice(1)),
-            removed: hunk.trim().split('\n').filter(line => line.startsWith('-')).map(line => line.slice(1))
-        }));
+        const parsedHunks = [];
+        for (let hunk of hunks) {
+            const lines = hunk.trim().split('\n');
+            const added = [];
+            const removed = [];
+
+            let inBlockComment = false;
+            let inHtmlComment = false;
+
+            for (const line of lines) {
+                if (line.startsWith('/*')) inBlockComment = true;
+                if (line.startsWith('*/')) inBlockComment = false;
+                if (line.startsWith('<!--')) inHtmlComment = true;
+                if (line.startsWith('-->')) inHtmlComment = false;
+
+                if (inBlockComment || inHtmlComment) continue;
+
+                if (line.startsWith('+') && !line.startsWith('+//') && !line.startsWith('+#') && !line.startsWith('+<!--')) {
+                    added.push(line.slice(1));
+                }
+                if (line.startsWith('-') && !line.startsWith('-//') && !line.startsWith('-#') && !line.startsWith('-<!--')) {
+                    removed.push(line.slice(1));
+                }
+            }
+
+            parsedHunks.push({
+                added,
+                removed
+            });
+        }
 
         fileDiffs.push({
             file_a: fileNames[1],
@@ -37,6 +63,7 @@ function parseDiff(diffContent) {
 
     return fileDiffs;
 }
+
 
 async function getFeedbackFromGPT(diffContent) {
     try {
