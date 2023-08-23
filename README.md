@@ -1,7 +1,3 @@
-Certainly! Here's a basic `README.md` for your npm package:
-
----
-
 # Git Diff Analyser
 
 Git Diff Analyser is a Node.js utility that leverages ChatGPT to analyse the changes in your git diff and provides human-readable feedback. This can be a valuable tool for code reviews, ensuring quality in your codebase.

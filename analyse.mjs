@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import { exec } from 'child_process';
+import { minimatch } from 'minimatch';
 
 dotenv.config();
 
@@ -72,12 +73,26 @@ exec('git diff', async (err, stdout, stderr) => {
         return;
     }
 
+    const gitIgnorePath = path.join(process.cwd(), '.gitignore');
+    const gitIgnorePatterns = fs.existsSync(gitIgnorePath) ? fs.readFileSync(gitIgnorePath, 'utf-8').split('\n') : [];
+
+    function isIgnoredFile(filePath) {
+        return gitIgnorePatterns.some((pattern) => minimatch(filePath, pattern));
+    }
+
     const fileDiffs = parseDiff(stdout);
     const allFeedback = [];
 
     for (const fileDiff of fileDiffs) {
-        // Skip if not a PHP file
-        if (!fileDiff.file_a.endsWith('.php') || !fileDiff.file_b.endsWith('.php')) {
+        // Skip common lock files and anything in gitignore
+        if (
+            fileDiff.file_a.endsWith('composer.lock') ||
+            fileDiff.file_b.endsWith('composer.lock') ||
+            fileDiff.file_a.endsWith('package-lock.json') ||
+            fileDiff.file_b.endsWith('package-lock.json') ||
+            isIgnoredFile(fileDiff.file_a) ||
+            isIgnoredFile(fileDiff.file_b)
+        ) {
             continue;
         }
 

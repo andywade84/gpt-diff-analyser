@@ -4,29 +4,29 @@
     "description": "A simple tool to analyse git diffs using ChatGPT.",
     "main": "analyse.mjs",
     "bin": {
-      "analyse-diff-gpt": "./analyse.mjs"
+        "analyse-diff-gpt": "./analyse.mjs"
     },
     "scripts": {},
     "author": "Your Name <youremail@example.com>",
     "license": "MIT",
     "dependencies": {
-      "axios": "^1.4.0",
-      "dotenv": "^16.3.1",
-      "openai": "^4.1.0"
+        "axios": "^1.4.0",
+        "dotenv": "^16.3.1",
+        "minimatch": "^9.0.3",
+        "openai": "^4.1.0"
     },
     "repository": {
-      "type": "git",
-      "url": "https://github.com/yourusername/gpt-diff-analyser.git"
+        "type": "git",
+        "url": "https://github.com/yourusername/gpt-diff-analyser.git"
     },
     "keywords": [
-      "git",
-      "diff",
-      "analyser",
-      "chatgpt",
-      "code review"
+        "git",
+        "diff",
+        "analyser",
+        "chatgpt",
+        "code review"
     ],
     "publishConfig": {
-      "access": "public"
+        "access": "public"
     }
-  }
-  
+}
