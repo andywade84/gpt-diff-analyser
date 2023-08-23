@@ -59,7 +59,14 @@ function isIgnoredFile(filePath, gitIgnorePatterns) {
     return gitIgnorePatterns.some(pattern => minimatch(filePath, pattern));
 }
 
-exec('git diff', async (err, stdout, stderr) => {
+const targetBranch = process.argv[2] || 'master';
+
+if (!targetBranch) {
+    console.error('Please provide the target branch to compare to.');
+    process.exit(1);
+}
+
+exec(`git diff ${targetBranch}`, async (err, stdout, stderr) => {
     if (err) {
         console.error('Error running git diff:', err);
         return;
