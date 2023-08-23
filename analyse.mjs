@@ -23,17 +23,10 @@ function parseDiff(diffContent) {
         if (!fileNames) continue;
 
         const hunks = fileDiff.split(/@@.*?@@/).slice(1);
-        const parsedHunks = [];
-        for (let hunk of hunks) {
-            const lines = hunk.trim().split('\n');
-            const added = lines.filter(line => line.startsWith('+')).map(line => line.slice(1));
-            const removed = lines.filter(line => line.startsWith('-')).map(line => line.slice(1));
-
-            parsedHunks.push({
-                added,
-                removed
-            });
-        }
+        const parsedHunks = hunks.map(hunk => ({
+            added: hunk.trim().split('\n').filter(line => line.startsWith('+')).map(line => line.slice(1)),
+            removed: hunk.trim().split('\n').filter(line => line.startsWith('-')).map(line => line.slice(1))
+        }));
 
         fileDiffs.push({
             file_a: fileNames[1],
@@ -62,6 +55,10 @@ async function getFeedbackFromGPT(diffContent) {
     }
 }
 
+function isIgnoredFile(filePath, gitIgnorePatterns) {
+    return gitIgnorePatterns.some(pattern => minimatch(filePath, pattern));
+}
+
 exec('git diff', async (err, stdout, stderr) => {
     if (err) {
         console.error('Error running git diff:', err);
@@ -76,40 +73,31 @@ exec('git diff', async (err, stdout, stderr) => {
     const gitIgnorePath = path.join(process.cwd(), '.gitignore');
     const gitIgnorePatterns = fs.existsSync(gitIgnorePath) ? fs.readFileSync(gitIgnorePath, 'utf-8').split('\n') : [];
 
-    function isIgnoredFile(filePath) {
-        return gitIgnorePatterns.some((pattern) => minimatch(filePath, pattern));
-    }
-
     const fileDiffs = parseDiff(stdout);
     const allFeedback = [];
 
     for (const fileDiff of fileDiffs) {
-        // Skip common lock files and anything in gitignore
-        if (
-            fileDiff.file_a.endsWith('composer.lock') ||
-            fileDiff.file_b.endsWith('composer.lock') ||
-            fileDiff.file_a.endsWith('package-lock.json') ||
-            fileDiff.file_b.endsWith('package-lock.json') ||
-            isIgnoredFile(fileDiff.file_a) ||
-            isIgnoredFile(fileDiff.file_b)
-        ) {
+        const { file_a, file_b } = fileDiff;
+        if (['composer.lock', 'package-lock.json'].some(ext => file_a.endsWith(ext) || file_b.endsWith(ext)) ||
+            isIgnoredFile(file_a, gitIgnorePatterns) ||
+            isIgnoredFile(file_b, gitIgnorePatterns)) {
             continue;
         }
 
-        console.log(`Analyzing changes in: ${fileDiff.file_a} -> ${fileDiff.file_b}`);
+        console.log(`Analyzing changes in: ${file_a} -> ${file_b}`);
         for (const hunk of fileDiff.hunks) {
             const hunkContent = `Added lines:\n${hunk.added.join('\n')}\n\nRemoved lines:\n${hunk.removed.join('\n')}`;
             const feedback = await getFeedbackFromGPT(hunkContent);
             console.log(`Feedback for hunk:\n`, feedback.content, "\n---\n");
 
             // Collect feedback in markdown format
-            allFeedback.push(`## Feedback for ${fileDiff.file_a} -> ${fileDiff.file_b}:\n`, feedback.content, "\n---\n");
+            allFeedback.push(`## Feedback for ${file_a} -> ${file_b}:\n`, feedback.content, "\n---\n");
         }
     }
 
     // Write combined feedback to a markdown file
     const outputPath = path.join(process.cwd(), 'feedback.md');
-    fs.writeFile(outputPath, allFeedback.join('\n'), (err) => {
+    fs.writeFile(outputPath, allFeedback.join('\n'), err => {
         if (err) {
             console.error("Error writing to the file:", err);
         } else {
