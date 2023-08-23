@@ -1,6 +1,6 @@
 {
     "name": "gpt-diff-analyser",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "description": "A simple tool to analyse git diffs using ChatGPT.",
     "main": "analyse.mjs",
     "bin": {
