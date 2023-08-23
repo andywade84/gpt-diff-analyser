@@ -7,7 +7,7 @@ Git Diff Analyser is a Node.js utility that leverages ChatGPT to analyse the cha
 You can install the Git Diff Analyser directly from npm:
 
 ```bash
-npm install git-diff-analyser --global
+npm i gpt-diff-analyser --global
 ```
 
 ## Usage
