@@ -93,7 +93,11 @@ if (!targetBranch) {
     process.exit(1);
 }
 
-exec(`git diff ${targetBranch}`, async (err, stdout, stderr) => {
+const command = `git diff ${targetBranch}`;
+console.log(`Running command: ${command}`);
+exec(command, async (err, stdout, stderr) => {
+    console.log(stdout);
+    console.log(stderr);
     if (err) {
         console.error('Error running git diff:', err);
         return;
